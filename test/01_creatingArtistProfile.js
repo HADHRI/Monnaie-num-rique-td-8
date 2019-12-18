@@ -9,7 +9,7 @@ contract('Creating artist profile', function (accounts) {
     beforeEach('setup contract for each test', async function () {
         // Deploying contract
         TicketingSystemInstance = await ticketingSystem.new({from: accounts[0]})
-    })
+    }) 
 
     // Tests routines start with "it"
     it('Create an artist profile', async function (){
@@ -47,7 +47,7 @@ contract('Creating artist profile', function (accounts) {
     // Creating a new artist and checking it happened correctly
     await TicketingSystemInstance.createArtist(web3.utils.fromAscii(artist1Name), artistCategory, {from: accounts[0]}); 
     retrievedArtist1Info = await TicketingSystemInstance.artistsRegister(1)
-    assert.equal(web3.utils.toUtf8(retrievedArtist1Info.name),artist1Name)
+    assert.equal(web3.utils.toUtf8(retrievedArtist1Info.name),artist1Name) 
     
     // Trying to modify artists with an account different than owner
     //function modifyArtist(uint _artistId, bytes32 _name, uint _artistCategory, address payable _newOwner) 
