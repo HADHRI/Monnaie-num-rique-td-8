@@ -48,9 +48,9 @@ contract('Concert management functions', function (accounts) {
     assert.equal(concert2Info.concertDate, concertDate)
 
     assert.equal(concert1Info.validatedByArtist, true)
-    assert.equal(concert2Info.validatedByArtist, false)
+   assert.equal(concert2Info.validatedByArtist, false)
 
-    assert.equal(concert1Info.validatedByVenue, false)
+  assert.equal(concert1Info.validatedByVenue, false)
     assert.equal(concert2Info.validatedByVenue, false)
 
     // Artist accepts concert 2 and venue accepts concert 1 and 2
@@ -66,7 +66,7 @@ contract('Concert management functions', function (accounts) {
     assert.equal(concert2Info.validatedByArtist, true)
 
     assert.equal(concert1Info.validatedByVenue, true)
-    assert.equal(concert2Info.validatedByVenue, true)
+    assert.equal(concert2Info.validatedByVenue, true) 
     })
         // Tests routines start with "it"
     it('Emitting tickets', async function (){
