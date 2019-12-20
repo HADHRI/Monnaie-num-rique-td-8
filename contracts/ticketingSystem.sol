@@ -6,10 +6,12 @@ contract ticketingSystem  {
 mapping (uint => Artist) public artistsRegister;  
 mapping (uint => Venue) public venuesRegister;  
 mapping (uint => Concert) public concertsRegister;
+mapping (uint => Ticket) public ticketsRegister;
 
 uint numbersOfArtists = 0; 
 uint numberOfVenue=0;
 uint numberOfConcerts=0;
+uint numberOfTickes=0;
 
 event ArtistCreated(uint artistCategory, string artistName,address artistAddress);
 
@@ -35,6 +37,13 @@ struct Concert{
         uint ticketPrice;
         bool validatedByVenue;
         bool validatedByArtist;
+        uint totalSoldTicket;
+        uint totalMoneyCollected;
+}
+
+struct Ticket{
+        bool isAvailable;
+        address owner;
 }
 
 // Function to create  an Artist
@@ -93,5 +102,18 @@ concertsRegister[_concertId].validatedByVenue=true;
 }
 
 
+function  emitTicket(uint _concertId, address payable _ticketOwner) public {
+        //Verify that the sender will emit ticket with his ticket 
+        require(artistsRegister[concertsRegister[_concertId].artistId].owner == msg.sender);
+      concertsRegister[_concertId].totalSoldTicket ++ ;
+      numberOfTickes++;
+      Ticket memory ticket= Ticket(true,_ticketOwner);
+      ticketsRegister[numberOfTickes]=ticket;
 
+
+       
+
+       
+
+}
 }
