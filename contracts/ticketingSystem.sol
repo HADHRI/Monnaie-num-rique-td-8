@@ -42,6 +42,7 @@ struct Concert{
 }
 
 struct Ticket{
+        uint concertId;
         bool isAvailable;
         address owner;
 }
@@ -107,13 +108,20 @@ function  emitTicket(uint _concertId, address payable _ticketOwner) public {
         require(artistsRegister[concertsRegister[_concertId].artistId].owner == msg.sender);
       concertsRegister[_concertId].totalSoldTicket ++ ;
       numberOfTickes++;
-      Ticket memory ticket= Ticket(true,_ticketOwner);
+      Ticket memory ticket= Ticket(_concertId,true,_ticketOwner);
       ticketsRegister[numberOfTickes]=ticket;
+}
 
-
-       
-
-       
-
+function useTicket(uint _ticketId) public{      
+        //verify that only the owner who can use the ticket 
+        require(ticketsRegister[_ticketId].owner == msg.sender);
+         //Verify that the date of concert is greater to now 
+        require(concertsRegister[ticketsRegister[_ticketId].concertId].concertDate > now);
+        // Prevent to use the ticket one day before the concert
+        require(concertsRegister[ticketsRegister[_ticketId].concertId].concertDate < now + 60*60*24);
+        // Verify that it'been validate by the Venue
+        require(concertsRegister[ticketsRegister[_ticketId].concertId].validatedByVenue == true);
+        ticketsRegister[_ticketId].isAvailable =false;
+        ticketsRegister[_ticketId].owner=address(0);
 }
 }
