@@ -43,8 +43,10 @@ struct Concert{
 
 struct Ticket{
         uint concertId;
+        uint amountPaid;
         bool isAvailable;
         address owner;
+        bool isAvailableForSale;
 }
 
 // Function to create  an Artist
@@ -108,8 +110,9 @@ function  emitTicket(uint _concertId, address payable _ticketOwner) public {
         require(artistsRegister[concertsRegister[_concertId].artistId].owner == msg.sender);
       concertsRegister[_concertId].totalSoldTicket ++ ;
       numberOfTickes++;
-      Ticket memory ticket= Ticket(_concertId,true,_ticketOwner);
-      ticketsRegister[numberOfTickes]=ticket;
+       ticketsRegister[numberOfTickes].concertId=_concertId;
+       ticketsRegister[numberOfTickes].isAvailable=true;
+        ticketsRegister[numberOfTickes].owner=_ticketOwner; 
 }
 
 function useTicket(uint _ticketId) public{      
@@ -122,6 +125,15 @@ function useTicket(uint _ticketId) public{
         // Verify that it'been validate by the Venue
         require(concertsRegister[ticketsRegister[_ticketId].concertId].validatedByVenue == true);
         ticketsRegister[_ticketId].isAvailable =false;
-        ticketsRegister[_ticketId].owner=address(0);
+        ticketsRegister[_ticketId].owner=address(0); 
+}
+
+function buyTicket(uint _concertId) public payable { 
+        concertsRegister[_concertId].totalSoldTicket ++;
+        concertsRegister[_concertId].totalMoneyCollected +=msg.value;
+        // Create the ticket 
+        Ticket memory ticket=Ticket(_concertId,msg.value,true,msg.sender,false);
+        numberOfTickes++;
+        ticketsRegister[numberOfTickes]=ticket;
 }
 }
