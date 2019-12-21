@@ -135,5 +135,11 @@ function buyTicket(uint _concertId) public payable {
         Ticket memory ticket=Ticket(_concertId,msg.value,true,msg.sender,false);
         numberOfTickes++;
         ticketsRegister[numberOfTickes]=ticket;
+} 
+//Transfer Ticket function
+function transferTicket(uint _ticketId, address payable _newOwner) public {
+        require(ticketsRegister[_ticketId].owner == msg.sender);
+        //Transfering to the new owner 
+        ticketsRegister[_ticketId].owner=_newOwner;
 }
 }
