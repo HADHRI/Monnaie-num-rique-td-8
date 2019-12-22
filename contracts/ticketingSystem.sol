@@ -49,6 +49,7 @@ struct Ticket{
         bool isAvailable;
         address owner;
         bool isAvailableForSale;
+        uint salePrice;
 }
 
 // Function to create  an Artist
@@ -134,7 +135,7 @@ function buyTicket(uint _concertId) public payable {
         concertsRegister[_concertId].totalSoldTicket ++;
         concertsRegister[_concertId].totalMoneyCollected +=msg.value;
         // Create the ticket 
-        Ticket memory ticket=Ticket(_concertId,msg.value,true,msg.sender,false);
+        Ticket memory ticket=Ticket(_concertId,msg.value,true,msg.sender,false,0);
         numberOfTickes++;
         ticketsRegister[numberOfTickes]=ticket;
 } 
@@ -162,7 +163,18 @@ function cashOutConcert(uint _concertId, address payable _cashOutAddress) public
     artistsRegister[concertsRegister[_concertId].artistId].totalTicketSold += concertsRegister[_concertId].totalSoldTicket;
     //after sharing money , init totalMoneyCollected to 0
      concertsRegister[_concertId].totalMoneyCollected = 0;
+}
 
-   
+function offerTicketForSale(uint _ticketId, uint _salePrice) public {
+// PreventTrying to sell a ticket that does not belong to me
+require(ticketsRegister[_ticketId].owner==msg.sender);
+ // Prevent Trying to sell a ticket for more than I paid for it
+ require(concertsRegister[ticketsRegister[_ticketId].concertId].ticketPrice > _salePrice );   
+//Set ticket to available ticket
+ ticketsRegister[_ticketId].isAvailable =true;
+ //Ticket is available for sale
+ticketsRegister[_ticketId]. isAvailableForSale =true;
+
+
 }
 }
