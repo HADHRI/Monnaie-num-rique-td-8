@@ -47,7 +47,7 @@ struct Ticket{
         uint concertId;
         uint amountPaid;
         bool isAvailable;
-        address owner;
+        address payable owner;
         bool isAvailableForSale;
         uint salePrice;
 }
@@ -174,7 +174,18 @@ require(ticketsRegister[_ticketId].owner==msg.sender);
  ticketsRegister[_ticketId].isAvailable =true;
  //Ticket is available for sale
 ticketsRegister[_ticketId]. isAvailableForSale =true;
-
-
+//Set the sale Price for the ticket
+ ticketsRegister[_ticketId].salePrice = _salePrice;
+} 
+function buySecondHandTicket(uint _ticketId) public  payable{
+  //Prevent Trying to buy the ticket for lower than the proposed price
+  require(ticketsRegister[_ticketId].salePrice == msg.value);
+  //Prevent trying to buy the ticket even though it was already used
+  require( ticketsRegister[_ticketId].isAvailable ==true);
+  require( ticketsRegister[_ticketId].isAvailableForSale ==true);
+  require(ticketsRegister[_ticketId].owner!=address(0)); 
+    ticketsRegister[_ticketId].isAvailableForSale = false;
+    ticketsRegister[_ticketId].owner.transfer(msg.value);
+    ticketsRegister[_ticketId].owner = msg.sender;
 }
 }

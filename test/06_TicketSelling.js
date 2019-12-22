@@ -80,7 +80,7 @@ contract('Concert management functions', function (accounts) {
     await TicketingSystemInstance.useTicket(1, {from: accounts[3]})
 
     // Trying to buy the ticket even though it was already used
-    await tryCatch(TicketingSystemInstance.buySecondHandTicket(1, {from: accounts[4], value: concertPrice - 2}), errTypes.revert);
+   await tryCatch(TicketingSystemInstance.buySecondHandTicket(1, {from: accounts[4], value: concertPrice - 2}), errTypes.revert);
     })
 
 })
