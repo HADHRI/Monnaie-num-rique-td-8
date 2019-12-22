@@ -7,12 +7,15 @@ mapping (uint => Artist) public artistsRegister;
 mapping (uint => Venue) public venuesRegister;  
 mapping (uint => Concert) public concertsRegister;
 mapping (uint => Ticket) public ticketsRegister;
+mapping (string => Ticket) public distributedTicket ; // uniquePromoCode to Ticket 
 
 uint numbersOfArtists = 0; 
 uint numberOfVenue=0;
 uint numberOfConcerts=0;
 uint numberOfTickes=0;
 uint totalTicketSold=0;
+
+
 
 event ArtistCreated(uint artistCategory, string artistName,address artistAddress);
 
@@ -41,6 +44,9 @@ struct Concert{
         bool validatedByArtist;
         uint totalSoldTicket;
         uint totalMoneyCollected;
+        uint maxOfDisbrutedTickets; //starts from 0 and the max will be 10 
+        uint numberOfDistributedTicketsConsumed; 
+    
 }
 
 struct Ticket{
@@ -50,6 +56,9 @@ struct Ticket{
         address payable owner;
         bool isAvailableForSale;
         uint salePrice;
+        bool distributed ;
+
+
 }
 
 // Function to create  an Artist
@@ -90,6 +99,10 @@ require(_concertDate >= now);
  concertsRegister[numberOfConcerts].venueId=_venueId;
  concertsRegister[numberOfConcerts].concertDate=_concertDate;
  concertsRegister[numberOfConcerts].ticketPrice=_ticketPrice; 
+ //define the max number Of distributed tickets for this concert
+ concertsRegister[numberOfConcerts].maxOfDisbrutedTickets= 10;
+ concertsRegister[numberOfConcerts].numberOfDistributedTicketsConsumed=0;
+
  validateConcert(numberOfConcerts);
   
 }
@@ -104,7 +117,6 @@ concertsRegister[_concertId].validatedByArtist=true;
 if (venuesRegister[concertsRegister[_concertId].venueId].owner == msg.sender ){
 concertsRegister[_concertId].validatedByVenue=true;
 }
-
 }
 
 
@@ -135,7 +147,7 @@ function buyTicket(uint _concertId) public payable {
         concertsRegister[_concertId].totalSoldTicket ++;
         concertsRegister[_concertId].totalMoneyCollected +=msg.value;
         // Create the ticket 
-        Ticket memory ticket=Ticket(_concertId,msg.value,true,msg.sender,false,0);
+        Ticket memory ticket=Ticket(_concertId,msg.value,true,msg.sender,false,0,false);
         numberOfTickes++;
         ticketsRegister[numberOfTickes]=ticket;
 } 
@@ -146,7 +158,6 @@ function transferTicket(uint _ticketId, address payable _newOwner) public {
         ticketsRegister[_ticketId].owner=_newOwner;
 } 
 function cashOutConcert(uint _concertId, address payable _cashOutAddress) public {
-
     //Prevent trying to cash out before the start of the concert
     require(concertsRegister[_concertId].concertDate < now);    
     //prevent trying to cash out with another acount
@@ -187,5 +198,33 @@ function buySecondHandTicket(uint _ticketId) public  payable{
     ticketsRegister[_ticketId].isAvailableForSale = false;
     ticketsRegister[_ticketId].owner.transfer(msg.value);
     ticketsRegister[_ticketId].owner = msg.sender;
+} 
+ 
+function createDistributedTicket(uint _concertId,string memory _promoCode) public {
+  require(artistsRegister[concertsRegister[_concertId].artistId].owner == msg.sender); 
+  // Number of max tickets Distributed by Concert
+  require( concertsRegister[_concertId].maxOfDisbrutedTickets < 10);
+  concertsRegister[_concertId].maxOfDisbrutedTickets++;
+  // Creating a ticket but not sold 
+  numberOfTickes++;
+  ticketsRegister[numberOfTickes].concertId=_concertId;
+  ticketsRegister[numberOfTickes].isAvailable=true;
+  //No owner for the moment 
+  ticketsRegister[numberOfTickes].owner=address(0); 
+  ticketsRegister[numberOfTickes].distributed=true;   
+  // save the distributed Ticket in the mapping ( unique promo Code to Ticket Object )
+  distributedTicket[_promoCode]=ticketsRegister[numberOfTickes]; 
 }
+function reedemDistributedTicket(address payable _toOwner,string memory _promoCode,uint _concertId) public  { 
+// check if there's  distributed tickets that are available 
+require(  concertsRegister[_concertId].numberOfDistributedTicketsConsumed <  concertsRegister[_concertId].maxOfDisbrutedTickets); 
+//check that this  distributed Ticket  exist 
+require(distributedTicket[_promoCode].concertId !=0 ); 
+require(distributedTicket[_promoCode].distributed==true);
+concertsRegister[_concertId].numberOfDistributedTicketsConsumed++; 
+// set the owner of the ticket 
+distributedTicket[_promoCode].owner= _toOwner;
+//Set Distrubuted Ticket to not available 
+distributedTicket[_promoCode].distributed=false;
+} 
 }
