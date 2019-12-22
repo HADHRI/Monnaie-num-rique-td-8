@@ -12,6 +12,7 @@ uint numbersOfArtists = 0;
 uint numberOfVenue=0;
 uint numberOfConcerts=0;
 uint numberOfTickes=0;
+uint totalTicketSold=0;
 
 event ArtistCreated(uint artistCategory, string artistName,address artistAddress);
 
@@ -20,14 +21,15 @@ event ArtistCreated(uint artistCategory, string artistName,address artistAddress
 struct Artist { 
         uint artistCategory;
         string name;
-        address owner; 
+        address payable owner; 
+        uint totalTicketSold;
 }
 
 struct Venue {
         bytes32 name;
         uint capacity;
         uint standardComission;
-        address owner;
+        address payable owner;
 }
 
 struct Concert{
@@ -51,7 +53,7 @@ struct Ticket{
 
 // Function to create  an Artist
 function createArtist(string memory name,uint _artistCategory) public {
-Artist memory artist= Artist(_artistCategory,name,msg.sender);
+Artist memory artist= Artist(_artistCategory,name,msg.sender,0);
 numbersOfArtists++;
 artistsRegister[numbersOfArtists]=artist; 
 }
@@ -141,5 +143,26 @@ function transferTicket(uint _ticketId, address payable _newOwner) public {
         require(ticketsRegister[_ticketId].owner == msg.sender);
         //Transfering to the new owner 
         ticketsRegister[_ticketId].owner=_newOwner;
+} 
+function cashOutConcert(uint _concertId, address payable _cashOutAddress) public {
+
+    //Prevent trying to cash out before the start of the concert
+    require(concertsRegister[_concertId].concertDate < now);    
+    //prevent trying to cash out with another acount
+    require(artistsRegister[concertsRegister[_concertId].artistId].owner == msg.sender);
+    // venueShare = totalTicketSale * venue1comission / 10000
+    uint venueShare = concertsRegister[_concertId].totalMoneyCollected*venuesRegister[concertsRegister[_concertId].venueId].standardComission/10000;
+    //artistShare = totalTicketSale - venueShare
+   uint artistShare = concertsRegister[_concertId].totalMoneyCollected - venueShare;
+   // Share money to venue 
+    venuesRegister[concertsRegister[_concertId].venueId].owner.transfer(venueShare);
+    //Share money to the artist
+    _cashOutAddress.transfer(artistShare);
+    //Incrementing ticket Sold 
+    artistsRegister[concertsRegister[_concertId].artistId].totalTicketSold += concertsRegister[_concertId].totalSoldTicket;
+    //after sharing money , init totalMoneyCollected to 0
+     concertsRegister[_concertId].totalMoneyCollected = 0;
+
+   
 }
 }
